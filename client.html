@@ -52,7 +52,9 @@
 
             var min = p.min ? p.min : 20,
                 max = p.max ? p.max : 60,
-                port = p.port ? p.port : 9999;
+                port = p.port ? p.port : 9999,
+                content = p.content ? p.content : '.htmlcontent',
+                navigation = p.navigation ? p.navigation : '#next';
 
             $(document).ajaxComplete(function() {
 
@@ -65,8 +67,8 @@
 
                 setTimeout(function() {
                     crawl({
-                        content: $('.htmlcontent'),
-                        navigation: $('#next'),
+                        content: $(content),
+                        navigation: $(navigation),
                         url: 'http://localhost:' + port + '/'
                     })
                 }, window.timeout);
