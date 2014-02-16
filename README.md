@@ -16,9 +16,9 @@ $ node server.js 9999 book-you-want-to-crawl.html
 3) Inject JavaScript functions from client.html by using Chrome Dev Tools, Firefox Firebug or similar:
 
 ```js
-//window.crawl
-//window.getRandomTimeout
-//window.kickoff
+window.crawl
+window.getRandomTimeout
+window.kickoff
 ```
 
 4) Go to first page you want to download and kickoff script, for example:
