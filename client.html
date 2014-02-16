@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bookworm</title>
+</head>
+<body>
+
+<div class="htmlcontent">
+    Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+</div>
+
+<nav>
+    <a id="next" href="#">This is next page link</a>
+</nav>
+
+<script type="text/javascript" src="jquery-1.11.0.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function documentReady() {
+
+        window.crawl = function crawl(p) {
+
+            var content = p.content.jquery ? p.content : $(p.content),
+                navigation = p.navigation.jquery ? p.navigation : $(p.navigation),
+                url = p.url;
+
+            $.ajax({
+                type: 'POST',
+                url: url,
+                contentType: 'text/plain',
+                data: JSON.stringify({
+                    data: content.html().trim()
+                }),
+                headers: {
+                },
+                success: function() {
+                    console.log('Success, navigating to next page');
+                    window.timeout = 0;
+                    navigation.click();
+                },
+                error: function() {
+                    console.log('Error, stopping');
+                }
+            });
+
+        }
+
+        window.getRandomTimeout = function getRandomTimeout(min, max) {
+            return Math.floor( (Math.random() * (max - min) + min) * 1000 );
+        }
+
+        window.kickoff = function kickoff(p) {
+
+            var min = p.min ? p.min : 20,
+                max = p.max ? p.max : 60,
+                port = p.port ? p.port : 9999;
+
+            $(document).ajaxComplete(function() {
+
+                if(window.timeout > 0)
+                    return;
+
+                window.timeout = getRandomTimeout(min, max);
+
+                console.log('Timeout:', window.timeout);
+
+                setTimeout(function() {
+                    crawl({
+                        content: $('.htmlcontent'),
+                        navigation: $('#next'),
+                        url: 'http://localhost:' + port + '/'
+                    })
+                }, window.timeout);
+
+            });
+
+            $.ajax({
+                type: 'GET',
+                url: '',
+                contentType: 'text/plain'
+            });
+
+        }
+
+    });
+</script>
+
+</body>
+</html>
