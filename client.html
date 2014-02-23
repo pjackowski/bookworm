@@ -24,6 +24,7 @@
         //DEBUG, DEBUG, DEBUG, DEBUG, DEBUG, DEBUG, DEBUG
         $('#next').on('click', function() {
             $('.htmlcontent').html('NEW CONTENT');
+            $('#lefttabtoc').find('a.current').text('NEW DESCRIPTION');
 
             setTimeout(function() {
                 $.ajax({
@@ -37,14 +38,11 @@
         //DEBUG, DEBUG, DEBUG, DEBUG, DEBUG, DEBUG, DEBUG
 
 
-        window.getRandom = function getRandom(min, max) {
-
+        window.getRandomTimeout = function getRandomTimeout(min, max) {
             return Math.floor( (Math.random() * (max - min) + min) * 1000 );
-
         };
 
         window.post = function crawl(p) {
-
             var content = p.content,
                 description = p.description,
                 navigation = p.navigation,
@@ -62,26 +60,21 @@
                 headers: {
                 },
                 success: function() {
-                    console.log('Success, navigating to next page');
+                    console.log('Data saved, going to the next page');
 
                     //reset timeout to indicate that AJAX request succeed and
                     //cache content, so code will not download data more than once
                     window.timeout = 0;
                     window.content = content;
-                    window.lastResult = 'success';
-
                     navigation.click();
                 },
                 error: function() {
-                    console.log('Error, trying to recover');
-                    window.lastResult = 'error';
+                    console.log('Error while saving data, stopping');
                 }
             });
-
         };
 
         window.crawl = function crawl(p) {
-
             console.log('Launching crawler');
 
             //defaults
@@ -95,7 +88,6 @@
                 url = 'http://localhost:' + port + '/';
 
             $(document).ajaxComplete(function(e, xhr, settings) {
-
                 //check if there is another request scheduled, waiting for JS timeout,
                 //which might happen if page does multiple AJAX queries
                 if(window.timeout > 0)
@@ -111,31 +103,29 @@
                     $description = description.jquery ? description : $(description),
                     $navigation = navigation.jquery ? navigation : $(navigation);
 
+                //try to recover if last save request failed due to broken connection
+                if(xhr.statusText === 'error') {
+                    console.log('Error while navigating to next page, trying again in', recoverTimeout, 'seconds');
+                    setTimeout(function() {
+                        $navigation.click();
+                    }, recoverTimeout * 1000);
+                    return;
+                }
+
                 //read data
                 var contentStr = $content.html().trim(),
                     descriptionStr = $description.text().trim();
 
-                //do not send the same content twice,
-                //try to recover if last save request failed due to error,
-                //or stop crawling if reached the end
+                //do not send the same content twice and stop crawling if reached the end
                 if(window.content === contentStr) {
-                    if(window.lastResult === 'error') {
-                        setTimeout(function() {
-                            $.ajax({
-                                type: 'GET',
-                                url: '',
-                                contentType: 'text/plain'
-                            });
-                        }, recoverTimeout);
-                    } else {
-                        return;
-                    }
+                    console.log('Done');
+                    return;
                 }
 
                 //crawler AI
-                window.timeout = getRandom(minTimeout, maxTimeout);
+                window.timeout = getRandomTimeout(minTimeout, maxTimeout);
 
-                console.log('Timeout:', window.timeout);
+                console.log('Saving page in', parseFloat((window.timeout/1000).toFixed(2)), 'seconds');
 
                 setTimeout(function() {
                     post({
@@ -146,7 +136,6 @@
                         url: url
                     })
                 }, window.timeout);
-
             });
 
             //initialize process
@@ -155,7 +144,6 @@
                 url: '',
                 contentType: 'text/plain'
             });
-
         };
 
     });
