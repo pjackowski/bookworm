@@ -5,6 +5,10 @@
 </head>
 <body>
 
+<div id="lefttabtoc">
+    <a class="current" href="#nowehere">Sample description</a>
+</div>
+
 <div class="htmlcontent">
     Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
 </div>
@@ -17,71 +21,142 @@
 <script type="text/javascript">
     $(document).ready(function documentReady() {
 
-        window.crawl = function crawl(p) {
+        //DEBUG, DEBUG, DEBUG, DEBUG, DEBUG, DEBUG, DEBUG
+        $('#next').on('click', function() {
+            $('.htmlcontent').html('NEW CONTENT');
 
-            var content = p.content.jquery ? p.content : $(p.content),
-                navigation = p.navigation.jquery ? p.navigation : $(p.navigation),
+            setTimeout(function() {
+                $.ajax({
+                    type: 'GET',
+                    url: '',
+                    contentType: 'text/plain'
+                });
+            }, 1000);
+
+        });
+        //DEBUG, DEBUG, DEBUG, DEBUG, DEBUG, DEBUG, DEBUG
+
+
+        window.getRandom = function getRandom(min, max) {
+
+            return Math.floor( (Math.random() * (max - min) + min) * 1000 );
+
+        };
+
+        window.post = function crawl(p) {
+
+            var content = p.content,
+                description = p.description,
+                navigation = p.navigation,
                 url = p.url;
 
+            //save data
             $.ajax({
                 type: 'POST',
                 url: url,
                 contentType: 'text/plain',
                 data: JSON.stringify({
-                    data: content.html().trim()
+                    data: content,
+                    description: description
                 }),
                 headers: {
                 },
                 success: function() {
                     console.log('Success, navigating to next page');
+
+                    //reset timeout to indicate that AJAX request succeed and
+                    //cache content, so code will not download data more than once
                     window.timeout = 0;
+                    window.content = content;
+                    window.lastResult = 'success';
+
                     navigation.click();
                 },
                 error: function() {
-                    console.log('Error, stopping');
+                    console.log('Error, trying to recover');
+                    window.lastResult = 'error';
                 }
             });
 
-        }
+        };
 
-        window.getRandomTimeout = function getRandomTimeout(min, max) {
-            return Math.floor( (Math.random() * (max - min) + min) * 1000 );
-        }
+        window.crawl = function crawl(p) {
 
-        window.kickoff = function kickoff(p) {
+            console.log('Launching crawler');
 
-            var min = p.min ? p.min : 20,
-                max = p.max ? p.max : 60,
+            //defaults
+            var minTimeout = p.min ? p.min : 20,
+                maxTimeout = p.max ? p.max : 60,
+                recoverTimeout = p.recover ? p.recover : 60,
                 port = p.port ? p.port : 9999,
                 content = p.content ? p.content : '.htmlcontent',
-                navigation = p.navigation ? p.navigation : '#next';
+                description = p.description ? p.description: '#lefttabtoc a.current',
+                navigation = p.navigation ? p.navigation : '#next',
+                url = 'http://localhost:' + port + '/';
 
-            $(document).ajaxComplete(function() {
+            $(document).ajaxComplete(function(e, xhr, settings) {
 
+                //check if there is another request scheduled, waiting for JS timeout,
+                //which might happen if page does multiple AJAX queries
                 if(window.timeout > 0)
                     return;
 
-                window.timeout = getRandomTimeout(min, max);
+                //do not repeat calls if reached end of resource, it happens when no more
+                //navigation is possible and the only AJAX request is one to localhost
+                if(settings.url === url)
+                    return;
+
+                //jquerify parameters
+                var $content = content.jquery ? content : $(content),
+                    $description = description.jquery ? description : $(description),
+                    $navigation = navigation.jquery ? navigation : $(navigation);
+
+                //read data
+                var contentStr = $content.html().trim(),
+                    descriptionStr = $description.text().trim();
+
+                //do not send the same content twice,
+                //try to recover if last save request failed due to error,
+                //or stop crawling if reached the end
+                if(window.content === contentStr) {
+                    if(window.lastResult === 'error') {
+                        setTimeout(function() {
+                            $.ajax({
+                                type: 'GET',
+                                url: '',
+                                contentType: 'text/plain'
+                            });
+                        }, recoverTimeout);
+                    } else {
+                        return;
+                    }
+                }
+
+                //crawler AI
+                window.timeout = getRandom(minTimeout, maxTimeout);
 
                 console.log('Timeout:', window.timeout);
 
                 setTimeout(function() {
-                    crawl({
-                        content: $(content),
-                        navigation: $(navigation),
-                        url: 'http://localhost:' + port + '/'
+                    post({
+                        content: contentStr,
+                        description: descriptionStr,
+                        navigation: $navigation,
+                        recoverTimeout: recoverTimeout,
+                        url: url
                     })
                 }, window.timeout);
 
             });
 
+            //initialize process
             $.ajax({
                 type: 'GET',
                 url: '',
                 contentType: 'text/plain'
             });
 
-        }
+        };
 
     });
 </script>

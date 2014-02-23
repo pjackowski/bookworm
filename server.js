@@ -9,8 +9,6 @@ var port = parseInt(process.argv[2]) || 9999,
 // Configure HTTP server
 var server = http.createServer(function(request, response) {
 
-    console.log('Request received');
-
     var responseData = '';
 
     request.on('data', function(data) {
@@ -19,6 +17,8 @@ var server = http.createServer(function(request, response) {
 
     request.on('end', function() {
         var resultObject = JSON.parse(responseData);
+
+        console.log('Request received:', resultObject.description);
 
         fs.appendFile(filename, resultObject.data + '\n\n', function (err) {
 
