@@ -84,8 +84,9 @@
                 port = p.port ? p.port : 9999,
                 content = p.content ? p.content : '.htmlcontent',
                 description = p.description ? p.description: '#lefttabtoc a.current',
-                navigation = p.navigation ? p.navigation : '#next',
-                url = 'http://localhost:' + port + '/';
+                navigation = p.navigation ? p.navigation : '.navcenter_right',
+                url = 'http://localhost:' + port + '/',
+                smartTimeout = p.smartTimeout ? p.smartTimeout : false;
 
             $(document).ajaxComplete(function(e, xhr, settings) {
                 //check if there is another request scheduled, waiting for JS timeout,
@@ -123,7 +124,13 @@
                 }
 
                 //crawler AI
-                window.timeout = getRandomTimeout(minTimeout, maxTimeout);
+                if(smartTimeout) {
+                    //more content, longer timeout: 1200 characters per minute
+                    window.timeout = (contentStr.length / 1200 * 60) + window.getRandomTimeout(0, 15);
+                } else {
+                    //default random
+                    window.timeout = window.getRandomTimeout(minTimeout, maxTimeout);
+                }
 
                 console.log('Saving page in', parseFloat((window.timeout/1000).toFixed(2)), 'seconds');
 
