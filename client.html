@@ -14,7 +14,7 @@
 </div>
 
 <nav>
-    <a id="next" href="#">This is next page link</a>
+    <a class="navcenter_right" href="#">This is next page link</a>
 </nav>
 
 <script type="text/javascript" src="jquery-1.11.0.min.js"></script>
@@ -22,7 +22,7 @@
     $(document).ready(function documentReady() {
 
         //DEBUG, DEBUG, DEBUG, DEBUG, DEBUG, DEBUG, DEBUG
-        $('#next').on('click', function() {
+        $('.navcenter_right').on('click', function() {
             $('.htmlcontent').html('NEW CONTENT');
             $('#lefttabtoc').find('a.current').text('NEW DESCRIPTION');
 
@@ -37,6 +37,13 @@
         });
         //DEBUG, DEBUG, DEBUG, DEBUG, DEBUG, DEBUG, DEBUG
 
+        window.scroll = function() {
+            setTimeout(function() {
+                window.scrollTo(0, window.pageYOffset + 100);
+                if(window,pageYOffset + window.innerHeight < document.body.scrollHeight)
+                    window.scroll();
+            }, window.getRandomTimeout(2, 6));
+        };
 
         window.getRandomTimeout = function getRandomTimeout(min, max) {
             return Math.floor( (Math.random() * (max - min) + min) * 1000 );
@@ -86,7 +93,8 @@
                 description = p.description ? p.description: '#lefttabtoc a.current',
                 navigation = p.navigation ? p.navigation : '.navcenter_right',
                 url = 'http://localhost:' + port + '/',
-                smartTimeout = p.smartTimeout ? p.smartTimeout : false;
+                smartTimeout = p.smartTimeout && p.smartTimeout > 0 ? p.smartTimeout : 0,
+                smartVariation = 5;
 
             $(document).ajaxComplete(function(e, xhr, settings) {
                 //check if there is another request scheduled, waiting for JS timeout,
@@ -124,9 +132,11 @@
                 }
 
                 //crawler AI
-                if(smartTimeout) {
-                    //more content, longer timeout: 1200 characters per minute
-                    window.timeout = (contentStr.length / 1200 * 60) + window.getRandomTimeout(0, 15);
+                if(smartTimeout > 0) {
+                    //more content, longer timeout, smartTimeout defines amount of characters per minute
+                    window.timeout = (contentStr.length / smartTimeout * 60 * 1000) -
+                                     (smartVariation * 1000) +
+                                     window.getRandomTimeout(0, smartVariation * 2);
                 } else {
                     //default random
                     window.timeout = window.getRandomTimeout(minTimeout, maxTimeout);
@@ -151,6 +161,9 @@
                 url: '',
                 contentType: 'text/plain'
             });
+
+            window.scroll();
+
         };
 
     });
