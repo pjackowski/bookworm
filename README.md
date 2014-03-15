@@ -16,15 +16,15 @@ $ node server.js 9999 book-you-want-to-crawl.html
 3) Inject JavaScript functions from client.html by using Chrome Dev Tools, Firefox Firebug or similar:
 
 ```js
-window.crawl
 window.getRandomTimeout
-window.kickoff
+window.post
+window.crawl
 ```
 
 4) Go to first page you want to download and kickoff script, for example:
 
 ```js
-window.kickoff({min: 10, max:20, port: 9999});
+window.crawl({min: 10, max:20, port: 9999});
 ```
 
 ## Documentation
@@ -38,7 +38,7 @@ $ node server.js PORT FILE_NAME
 2) Client
 
 ```js
-window.kickoff({
+window.crawl({
 
     //timeout (range) in seconds before navigating to next page,
     //sneaky human like behaviour, but could be improved by simulating more activity (pauses, etc)
