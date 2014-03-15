@@ -38,18 +38,22 @@
         //DEBUG, DEBUG, DEBUG, DEBUG, DEBUG, DEBUG, DEBUG
 
         window.scroll = function() {
-            setTimeout(function() {
+            window.scrollTimeout = setTimeout(function() {
                 window.scrollTo(0, window.pageYOffset + 100);
                 if(window,pageYOffset + window.innerHeight < document.body.scrollHeight)
                     window.scroll();
             }, window.getRandomTimeout(2, 6));
         };
 
-        window.getRandomTimeout = function getRandomTimeout(min, max) {
+        window.stopScroll = function() {
+            clearTimeout(window.scrollTimeout);
+        };
+
+        window.getRandomTimeout = function(min, max) {
             return Math.floor( (Math.random() * (max - min) + min) * 1000 );
         };
 
-        window.post = function crawl(p) {
+        window.post = function(p) {
             var content = p.content,
                 description = p.description,
                 navigation = p.navigation,
@@ -81,7 +85,7 @@
             });
         };
 
-        window.crawl = function crawl(p) {
+        window.crawl = function(p) {
             console.log('Launching crawler');
 
             //defaults
@@ -93,8 +97,7 @@
                 description = p.description ? p.description: '#lefttabtoc a.current',
                 navigation = p.navigation ? p.navigation : '.navcenter_right',
                 url = 'http://localhost:' + port + '/',
-                smartTimeout = p.smartTimeout && p.smartTimeout > 0 ? p.smartTimeout : 0,
-                smartVariation = 5;
+                smartTimeout = p.smartTimeout && p.smartTimeout > 0 ? p.smartTimeout : 0;
 
             $(document).ajaxComplete(function(e, xhr, settings) {
                 //check if there is another request scheduled, waiting for JS timeout,
@@ -135,8 +138,7 @@
                 if(smartTimeout > 0) {
                     //more content, longer timeout, smartTimeout defines amount of characters per minute
                     window.timeout = (contentStr.length / smartTimeout * 60 * 1000) -
-                                     (smartVariation * 1000) +
-                                     window.getRandomTimeout(0, smartVariation * 2);
+                                     (smartVariation * 1000);
                 } else {
                     //default random
                     window.timeout = window.getRandomTimeout(minTimeout, maxTimeout);
@@ -144,8 +146,8 @@
 
                 console.log('Saving page in', parseFloat((window.timeout/1000).toFixed(2)), 'seconds');
 
-                setTimeout(function() {
-                    post({
+                window.crawlTimeout = setTimeout(function() {
+                    window.post({
                         content: contentStr,
                         description: descriptionStr,
                         navigation: $navigation,
@@ -162,8 +164,10 @@
                 contentType: 'text/plain'
             });
 
-            window.scroll();
+        };
 
+        window.stopCrawl = function() {
+            clearTimeout(window.crawlTimeout);
         };
 
     });
