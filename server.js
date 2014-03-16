@@ -9,6 +9,8 @@ var port = parseInt(process.argv[2]) || 9999,
 // Configure HTTP server
 var server = http.createServer(function(request, response) {
 
+    "use strict";
+
     var responseData = '';
 
     request.on('data', function(data) {
@@ -16,9 +18,23 @@ var server = http.createServer(function(request, response) {
     });
 
     request.on('end', function() {
-        var resultObject = JSON.parse(responseData);
+        var resultObject = JSON.parse(responseData),
+            imagesArrLength = resultObject.images.length;
 
-        console.log('Request received:', resultObject.description);
+        console.log('Request received:', resultObject.description.toString());
+
+        if(imagesArrLength > 0) {
+            for(var i = 1; i < imagesArrLength; i++) {
+                var server = resultObject.images[0],
+                    imgPath = resultObject.images[i].toString();
+
+                if(imgPath.charAt(0) !== '/') {
+                    server += '/';
+                }
+
+                console.log('   ', server + imgPath);
+            }
+        }
 
         fs.appendFile(filename, resultObject.data + '\n\n', function (err) {
 

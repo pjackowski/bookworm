@@ -16,6 +16,7 @@ $ node server.js 9999 book-you-want-to-crawl.html
 3) Inject JavaScript functions from client.html by using Chrome Dev Tools, Firefox Firebug or similar:
 
 ```js
+window.getImageSources
 window.getRandomTimeout
 window.post
 window.crawl
@@ -38,22 +39,21 @@ $ node server.js PORT FILE_NAME
 2) Client
 
 ```js
+min          (default: 20)                        //minimum timeout in seconds before navigating to next page
+max          (default: 60)                        //maximum timeout in seconds before navigating to next page
+recover      (default: 60)                        //timeout before trying to navigate again (in case of network error)
+port         (default: 9999)                      //localhost server port
+content      (default: '.htmlcontent')            //page content selector
+description  (default: '#lefttabtoc a.current')   //chapter title selector
+navigation   (default: '.navcenter_right')        //next page navigation selector
+speed        (default: 0)                         //amount of characters "read" per minute to simulate human behaviour
+sniper       (default: false)                     //saves immediately current page
+```
+
+```js
 window.crawl({
-
-    //timeout (range) in seconds before navigating to next page,
-    //sneaky human like behaviour, but could be improved by simulating more activity (pauses, etc)
-    //defaults is 20-60
-    min: 10,
-    max:20,
-
-    //server port, default is 9999
-    port: 9999,
-
-    //content selector, default '.htmlcontent'
-    content: '.htmlcontent',
-
-    //navigation (button or link) selector, default '#next'
-    navigation: '#next'
-
+    min: 20,
+    max: 60
+    port: 25000
 });
 ```

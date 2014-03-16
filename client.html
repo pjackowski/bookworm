@@ -11,6 +11,8 @@
 
 <div class="htmlcontent">
     Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+    <img src="test-img-no-slash.jpg"/>
+    <img src="/test-img-slash.jpg"/>
 </div>
 
 <nav>
@@ -20,6 +22,8 @@
 <script type="text/javascript" src="jquery-1.11.0.min.js"></script>
 <script type="text/javascript">
     $(document).ready(function documentReady() {
+
+        "use strict";
 
         //DEBUG, DEBUG, DEBUG, DEBUG, DEBUG, DEBUG, DEBUG
         $('.navcenter_right').on('click', function() {
@@ -49,6 +53,20 @@
             clearTimeout(window.scrollTimeout);
         };
 
+        window.getImageSources = function($container) {
+            var arr = [],
+                $images = $container.find('img');
+
+            if($images.length > 0) {
+                arr.push(window.location.hostname);
+                $images.each(function() {
+                    arr.push($(this).attr('src'));
+                });
+            }
+
+            return arr;
+        }
+
         window.getRandomTimeout = function(min, max) {
             return Math.floor( (Math.random() * (max - min) + min) * 1000 );
         };
@@ -56,7 +74,9 @@
         window.post = function(p) {
             var content = p.content,
                 description = p.description,
+                images = p.images,
                 navigation = p.navigation,
+                sniper = p.sniper,
                 url = p.url;
 
             //save data
@@ -66,18 +86,24 @@
                 contentType: 'text/plain',
                 data: JSON.stringify({
                     data: content,
-                    description: description
+                    description: description,
+                    images: images
                 }),
                 headers: {
                 },
                 success: function() {
-                    console.log('Data saved, going to the next page');
 
                     //reset timeout to indicate that AJAX request succeed and
                     //cache content, so code will not download data more than once
                     window.timeout = 0;
                     window.content = content;
-                    navigation.click();
+
+                    if(sniper) {
+                        console.log('Data saved');
+                    } else {
+                        console.log('Data saved, going to the next page');
+                        navigation.click();
+                    }
                 },
                 error: function() {
                     console.log('Error while saving data, stopping');
@@ -86,18 +112,20 @@
         };
 
         window.crawl = function(p) {
-            console.log('Launching crawler');
 
-            //defaults
-            var minTimeout = p.min ? p.min : 20,
-                maxTimeout = p.max ? p.max : 60,
-                recoverTimeout = p.recover ? p.recover : 60,
-                port = p.port ? p.port : 9999,
-                content = p.content ? p.content : '.htmlcontent',
-                description = p.description ? p.description: '#lefttabtoc a.current',
-                navigation = p.navigation ? p.navigation : '.navcenter_right',
-                url = 'http://localhost:' + port + '/',
-                smartTimeout = p.smartTimeout && p.smartTimeout > 0 ? p.smartTimeout : 0;
+            //healthy defaults
+            var minTimeout     = p.min !== undefined ? p.min : 20,                                     //minimum timeout in seconds before navigating to next page
+                maxTimeout     = p.max !== undefined ? p.max : 60,                                     //maximum timeout in seconds before navigating to next page
+                recoverTimeout = p.recover !== undefined ? p.recover : 60,                             //timeout before trying to navigate again (in case of network error)
+                port           = p.port !== undefined ? p.port : 9999,                                 //localhost server port
+                content        = p.content !== undefined ? p.content : '.htmlcontent',                 //page content selector
+                description    = p.description !== undefined ? p.description: '#lefttabtoc a.current', //chapter title selector
+                navigation     = p.navigation !== undefined ? p.navigation : '.navcenter_right',       //next page navigation selector
+                speed          = p.speed !== undefined && p.speed > 0 ? p.speed : 0,                   //amount of characters "read" per minute to simulate human behaviour
+                sniper         = p.sniper !== undefined ? p.sniper : false,                            //saves immediately current page
+                url            = 'http://localhost:' + port + '/';                                     //AJAX target url, always localhost
+
+            console.log('Launching');
 
             $(document).ajaxComplete(function(e, xhr, settings) {
                 //check if there is another request scheduled, waiting for JS timeout,
@@ -126,7 +154,8 @@
 
                 //read data
                 var contentStr = $content.html().trim(),
-                    descriptionStr = $description.text().trim();
+                    descriptionStr = $description.text().trim(),
+                    images = window.getImageSources($content);
 
                 //do not send the same content twice and stop crawling if reached the end
                 if(window.content === contentStr) {
@@ -135,26 +164,37 @@
                 }
 
                 //crawler AI
-                if(smartTimeout > 0) {
-                    //more content, longer timeout, smartTimeout defines amount of characters per minute
-                    window.timeout = (contentStr.length / smartTimeout * 60 * 1000) -
-                                     (smartVariation * 1000);
+                if(speed > 0) {
+                    //more content, longer timeout
+                    //speed defines amount of characters per minute, typically 1000/minute
+                    window.timeout = (contentStr.length / speed) * 60 * 1000;
                 } else {
                     //default random
                     window.timeout = window.getRandomTimeout(minTimeout, maxTimeout);
                 }
 
-                console.log('Saving page in', parseFloat((window.timeout/1000).toFixed(2)), 'seconds');
-
-                window.crawlTimeout = setTimeout(function() {
+                if(sniper) {
+                    console.log('Saving page now in sniper mode');
                     window.post({
                         content: contentStr,
                         description: descriptionStr,
+                        images: images,
                         navigation: $navigation,
-                        recoverTimeout: recoverTimeout,
+                        sniper: sniper,
                         url: url
                     })
-                }, window.timeout);
+                } else {
+                    console.log('Saving page in', parseFloat((window.timeout/1000).toFixed(2)), 'seconds');
+                    window.crawlTimeout = setTimeout(function() {
+                        window.post({
+                            content: contentStr,
+                            description: descriptionStr,
+                            images: images,
+                            navigation: $navigation,
+                            url: url
+                        })
+                    }, window.timeout);
+                }
             });
 
             //initialize process
