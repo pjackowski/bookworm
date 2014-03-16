@@ -125,6 +125,7 @@
                 navigation     = p.navigation !== undefined ? p.navigation : '.navcenter_right',       //next page navigation selector
                 speed          = p.speed !== undefined && p.speed > 0 ? p.speed : 0,                   //amount of characters "read" per minute to simulate human behaviour
                 sniper         = p.sniper !== undefined ? p.sniper : false,                            //saves immediately current page
+                images         = p.images !== undefined ? p.images : false,                            //adds links to images to payload if set to true
                 url            = 'http://localhost:' + port + '/';                                     //AJAX target url, always localhost
 
             console.log('Launching');
@@ -162,7 +163,7 @@
                 //read data
                 var contentStr = $content.html().trim(),
                     descriptionStr = $description.text().trim(),
-                    images = window.getImageSources($content);
+                    imagesArr = images ? window.getImageSources($content) : [];
 
                 //do not send the same content twice and stop crawling if reached the end
                 if(window.content === contentStr) {
@@ -187,7 +188,7 @@
                     window.post({
                         content: contentStr,
                         description: descriptionStr,
-                        images: images,
+                        images: imagesArr,
                         navigation: $navigation,
                         sniper: sniper,
                         url: url
@@ -199,7 +200,7 @@
                         window.post({
                             content: contentStr,
                             description: descriptionStr,
-                            images: images,
+                            images: imagesArr,
                             navigation: $navigation,
                             url: url
                         })

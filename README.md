@@ -48,6 +48,7 @@ description  (default: '#lefttabtoc a.current')   //chapter title selector
 navigation   (default: '.navcenter_right')        //next page navigation selector
 speed        (default: 0)                         //amount of characters "read" per minute to simulate human behaviour
 sniper       (default: false)                     //saves immediately current page
+images       (default: false)                     //adds links to images to payload if set to true
 ```
 
 ```js
