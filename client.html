@@ -45,9 +45,10 @@
         window.scroll = function() {
             window.scrollTimeout = setTimeout(function() {
                 window.scrollTo(0, window.pageYOffset + 100);
-                if(window,pageYOffset + window.innerHeight < document.body.scrollHeight)
-                    window.scroll();
-            }, window.getRandomTimeout(2, 6));
+                //this prevents from scrolling on other page
+                //if(window,pageYOffset + window.innerHeight < document.body.scrollHeight)
+                window.scroll();
+            }, window.getRandomTimeout(10, 15));
         };
 
         window.stopScroll = function() {
