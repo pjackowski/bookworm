@@ -13,14 +13,8 @@ This javascript will download any book-like content for you.
 $ node server.js 9999 book-you-want-to-crawl.html
 ```
 
-3) Inject JavaScript functions from client.html by using Chrome Dev Tools, Firefox Firebug or similar:
+3) Inject JavaScript functions from client.html.
 
-```js
-window.getImageSources
-window.getRandomTimeout
-window.post
-window.crawl
-```
 
 4) Go to first page you want to download and kickoff script, for example:
 
