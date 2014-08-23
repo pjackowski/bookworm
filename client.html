@@ -25,23 +25,6 @@
 
         "use strict";
 
-        //DEBUG, DEBUG, DEBUG, DEBUG, DEBUG, DEBUG, DEBUG
-        $('.navcenter_right').on('click', function() {
-            $('.htmlcontent').html('NEW CONTENT');
-            $('#lefttabtoc').find('a.current').text('NEW DESCRIPTION');
-
-            //simulate AJAX request on click
-            setTimeout(function() {
-                $.ajax({
-                    type: 'GET',
-                    url: '',
-                    contentType: 'text/plain'
-                });
-            }, 1000);
-
-        });
-        //DEBUG, DEBUG, DEBUG, DEBUG, DEBUG, DEBUG, DEBUG
-
         window.scroll = function() {
             window.scrollTimeout = setTimeout(function() {
                 window.scrollTo(0, window.pageYOffset + 100);

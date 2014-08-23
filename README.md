@@ -1,6 +1,6 @@
 # Bookworm
 
-This javascript will download any book-like content for you.
+This javascript will download any sequenctial content for you.
 
 
 ## Quick Start
@@ -10,7 +10,7 @@ This javascript will download any book-like content for you.
 2) Run server script, for example:
 
 ```sh
-$ node server.js 9999 book-you-want-to-crawl.html
+$ node server.js 9999 filename.html
 ```
 
 3) Inject JavaScript functions from client.html.
