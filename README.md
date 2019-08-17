@@ -1,6 +1,8 @@
 # Bookworm
 
-This javascript will download any sequenctial content for you.
+This JS script downloads sequential HTML books via browser, so you can use files in text-to-speech software.
+
+Project isn't maintained anymore.
 
 
 ## Quick Start
